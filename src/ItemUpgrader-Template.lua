@@ -17,8 +17,8 @@ To get the number values of the players class used for the player:GetClass() che
 local NPC_ITEM_UPGRADER = 300000
 
 -- declaration of single items in case u also want to see how to realize a weapon upgrader!
-local T4_BIS_MAINHAND_FIREMAGE = 34336 -- Sunflare - Dagger
-local T5_BIS_MAINHAND_FIREMAGE = 30095 -- Fang of the Leviathan - Sword
+local BIS_MAINHAND_FIREMAGE_NEW = 34336 -- Sunflare - Dagger
+local BIS_MAINHAND_FIREMAGE_OLD = 30095 -- Fang of the Leviathan - Sword
 
 -- declaration of upgrade currency items
 -- this is used on top of the tierset items needed for the upgrade!
@@ -40,11 +40,11 @@ local MageTier5UpgradeList = {
 
 -- Tier 4 mage items (used as check if the user rly is eligible to upgrade his items since all items are needed for a full setupgrade)
 local MageTier4UpgradeList = {
-      29076, -- Collar of the Aldor
-        29080, -- Gloves of the Aldor
-          29078,  -- Legwraps of the Aldor
-            29079, -- Pauldrons of the Aldor
-              29077, -- Vestments of the Aldor
+    29076, -- Collar of the Aldor
+      29080, -- Gloves of the Aldor
+        29078,  -- Legwraps of the Aldor
+          29079, -- Pauldrons of the Aldor
+            29077, -- Vestments of the Aldor
 };
 
 local function ItemUpgradeOnGossipHello(event, player, creature) -- function to display the gossip with the options to select
@@ -68,40 +68,43 @@ local function ItemUpgradeOnGossipSelect(event, player, creature, sender, intid,
         
     elseif (intid == 2) then -- else if user selected option 2 then:
         player:GossipClearMenu()
-        player:GossipMenuAddItem(0, "I want to upgrade my 'Sunflare' to the 'Fang of the Leviathan' please", 0, 200, false, "Do you really want to upgrade your 'Sunflare' to the 'Fang of Leviathan'? This will cost you 10 " ..WeaponTokenString.. ".") -- add a new gossip item which asks on selection if the user is sure about his selection and shows him what the upgrade will cost
+        player:GossipMenuAddItem(0, "I want to upgrade my 'Fang of the Leviathan' to 'Sunflare' please", 0, 200, false, "Do you really want to upgrade your 'Sunflare' to the 'Fang of Leviathan'? This will cost you 10 " ..WeaponTokenString.. ".") -- add a new gossip item which asks on selection if the user is sure about his selection and shows him what the upgrade will cost
         player:GossipMenuAddItem(0, "Back", 0, 4000) -- adds a back option to get back to the first window (option 4000)
         player:GossipSendMenu(3, creature) -- sends the new gossip menu to the gossip window (we do this so the user has multiple menus available at one npc)
         
     elseif (intid == 100) then -- else if user selected option 100 then:
-        if (player:HasItem(T5_UPGRADE_CURRENCY, 20)) then -- checks if the user has 20 pieces of the currency needed for the t5 upgrade... of yourse you can let it cost gold only... this would then be done bit different via a moneycheck!
-            if (player:GetClass() == 8) then -- checks for the player class mage
-                for a, b in ipairs (MageTier4UpgradeList) do -- starts with the for loop to prepare the item change!
-                    if player:HasItem(b, 1) then -- checks if the player has all t4 items... b is the table with the t4 items
-                        for c, d in ipairs (MageTier5UpgradeList) do -- iterates a second for loop to prepare the rollout for the t5 items
-                            player:RemoveItem(b, 1) -- removes all t4 items(b) one time from the player...
-                            player:AddItem(d) -- adds all t5 items(d) one time to the player...
-                            player:SendAreaTriggerMessage("You successfully upgraded your set from T4 to T5") -- sends an areatrigger message to the player about the successful trade
-                            player:GossipComplete()
-                        break
-                        end
-                    elseif not player:HasItem(b, 1) then -- in case the player doesn't have all items from t4 set... 
-                        player:SendAreaTriggerMessage("You don't have all T4 items! Please get all T4 items first to proceed with the upgrade.") -- send an areatriggermessage to the player that he does not own all t4 items currently
-                        player:GossipComplete() -- close the gossip window
+        if player:HasItem(MageTier4UpgradeList[1]) and player:HasItem(MageTier4UpgradeList[2]) and player:HasItem(MageTier4UpgradeList[3]) and player:HasItem(MageTier4UpgradeList[4]) and player:HasItem(MageTier4UpgradeList[5]) then
+            if player:GetClass() == 8 then -- checks for the players class (8 = mageclass)
+                if player:HasItem(T5_UPGRADE_CURRENCY, 20) then
+                    for i, item in ipairs(MageTier5UpgradeList) do
+                        player:RemoveItem(MageTier4UpgradeList[1], 1)
+                        player:RemoveItem(MageTier4UpgradeList[2], 1)
+                        player:RemoveItem(MageTier4UpgradeList[3], 1)
+                        player:RemoveItem(MageTier4UpgradeList[4], 1)
+                        player:RemoveItem(MageTier4UpgradeList[5], 1)
+                        player:AddItem(item, 1)
                     end
-                break
+                    player:RemoveItem(T5_UPGRADE_CURRENCY, 20)
+                    player:SendAreaTriggerMessage("You have successfully upgraded your tier set!")
+                    player:GossipComplete()
+                else
+                    player:SendAreaTriggerMessage("You do not have enough " .. TierSetTokenString .. " to upgrade your tier set.")  -- sends an areatrigger message to the player that he does not own enough of the tokens needed for the trade
+                    player:GossipComplete()
                 end
             else -- for more class checks change this else here properly to elseif player:GetClass() == InsertClassIdHere
                 player:SendAreaTriggerMessage("You are right now with a non mage class at an Item Upgrader which is currently setted up only for 1 mage set!") -- change this text
             end
         else
-            player:SendAreaTriggerMessage("You do not own 20 pieces of the " ..TierSetTokenString.. "!") -- sends an areatrigger message to the player that he does not own enough of the tokens needed for the trade
+            player:SendAreaTriggerMessage("You do not have all the required items to upgrade your tier set.") -- sends this message in case the player doesn't have all t4 items needed
+            player:GossipComplete()
         end
-
+    
     elseif (intid == 200) then -- else if player selected option 200 then:
         if (player:HasItem(WEAPON_UPGRADE_CURRENCY, 10)) then -- checks if the player has 10 pieces of the desired upgrade currency
-            if (player:HasItem(T4_BIS_MAINHAND_FIREMAGE)) then -- checks if the player has the needed item to proceed with the upgrade
-                player:RemoveItem(T4_BIS_MAINHAND_FIREMAGE, 1) -- if all checks are fullfilled remove the item one time from the player
-                player:AddItem(T5_BIS_MAINHAND_FIREMAGE, 1) -- as well as hand out the new item one time
+            if (player:HasItem(BIS_MAINHAND_FIREMAGE_OLD, 1)) then -- checks if the player has the needed item to proceed with the upgrade
+                player:RemoveItem(BIS_MAINHAND_FIREMAGE_OLD, 1) -- if all checks are fullfilled remove the item one time from the player
+                player:AddItem(BIS_MAINHAND_FIREMAGE_NEW, 1) -- as well as hand out the new item one time
+                player:RemoveItem(WEAPON_UPGRADE_CURRENCY, 10) -- and remove 10 currency emblems
                 player:GossipComplete()
             else
                 player:SendAreaTriggerMessage("You do not own the needed item and thus the trade can't be completed!") -- sends an areatrigger message to the player that he doesn't own the weapon needed for the trade
@@ -123,8 +126,6 @@ local function ItemUpgradeOnGossipSelect(event, player, creature, sender, intid,
         player:GossipMenuAddItem(0, "Close", 0, 3000)
         player:GossipSendMenu(4, creature)
     end
-
-    
 end
 
 RegisterCreatureGossipEvent(NPC_ITEM_UPGRADER, 2, ItemUpgradeOnGossipSelect)
