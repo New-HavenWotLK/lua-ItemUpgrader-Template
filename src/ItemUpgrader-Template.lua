@@ -73,8 +73,8 @@ local function ItemUpgradeOnGossipSelect(event, player, creature, sender, intid,
         player:GossipSendMenu(3, creature) -- sends the new gossip menu to the gossip window (we do this so the user has multiple menus available at one npc)
         
     elseif (intid == 100) then -- else if user selected option 100 then:
-        if player:HasItem(MageTier4UpgradeList[1]) and player:HasItem(MageTier4UpgradeList[2]) and player:HasItem(MageTier4UpgradeList[3]) and player:HasItem(MageTier4UpgradeList[4]) and player:HasItem(MageTier4UpgradeList[5]) then
-            if player:GetClass() == 8 then -- checks for the players class (8 = mageclass)
+        if player:GetClass() == 8 then -- checks for the players class (8 = mageclass)    
+            if player:HasItem(MageTier4UpgradeList[1]) and player:HasItem(MageTier4UpgradeList[2]) and player:HasItem(MageTier4UpgradeList[3]) and player:HasItem(MageTier4UpgradeList[4]) and player:HasItem(MageTier4UpgradeList[5]) then
                 if player:HasItem(T5_UPGRADE_CURRENCY, 20) then
                     for i, item in ipairs(MageTier5UpgradeList) do
                         player:RemoveItem(MageTier4UpgradeList[1], 1)
@@ -92,11 +92,11 @@ local function ItemUpgradeOnGossipSelect(event, player, creature, sender, intid,
                     player:GossipComplete()
                 end
             else -- for more class checks change this else here properly to elseif player:GetClass() == InsertClassIdHere
-                player:SendAreaTriggerMessage("You are right now with a non mage class at an Item Upgrader which is currently setted up only for 1 mage set!") -- change this text
+                player:SendAreaTriggerMessage("You do not have all the required items to upgrade your tier set.") -- sends this message in case the player doesn't have all t4 items needed
+                player:GossipComplete()
             end
         else
-            player:SendAreaTriggerMessage("You do not have all the required items to upgrade your tier set.") -- sends this message in case the player doesn't have all t4 items needed
-            player:GossipComplete()
+            player:SendAreaTriggerMessage("You are right now with a non mage class at an Item Upgrader which is currently setted up only for 1 mage set!") -- change this text  
         end
     
     elseif (intid == 200) then -- else if player selected option 200 then:
@@ -129,3 +129,5 @@ local function ItemUpgradeOnGossipSelect(event, player, creature, sender, intid,
 end
 
 RegisterCreatureGossipEvent(NPC_ITEM_UPGRADER, 2, ItemUpgradeOnGossipSelect)
+            
+                
